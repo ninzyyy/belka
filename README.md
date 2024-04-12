@@ -1,0 +1,1 @@
+This repository is dedicated to my solution for the "Leash Bio - Predict New Medicines with BELKA" Kaggle Competition. My aim is to develop a machine learning model that accurately predicts the binding affinity of small molecules to specific protein targets.
