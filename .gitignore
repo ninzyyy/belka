@@ -83,8 +83,6 @@ venv.bak/
 .vscode/
 
 # Custom
-# Add any additional files/folders that are specific to your project
-# For example, if you have data files, logs, or output that should not be committed
 data/
 logs/
 output/
