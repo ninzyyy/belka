@@ -24,4 +24,10 @@ class ProteinManager:
 if __name__ == "__main__":
 
     protein_1 = ProteinManager("data/protein_data/1ao6.fasta")
-    print(protein_1.get_sequence())
+    print(f"\n{protein_1.get_sequence()}")
+
+    protein_2 = ProteinManager("data/protein_data/3I28.fasta")
+    print(f"\n{protein_2.get_sequence()}")
+
+    protein_3 = ProteinManager("data/protein_data/7USK.fasta")
+    print(f"\n{protein_3.get_sequence()}")
