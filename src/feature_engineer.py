@@ -26,9 +26,9 @@ class FeatureEngineer:
 
         return np.array(feature_list).astype(np.uint8)
 
-    def smiles_to_maccs(smiles):
+    def smiles_to_maccs(self, smiles):
 
-        molecule = Chem.MolFromSmiles(self, smiles)
+        molecule = Chem.MolFromSmiles(smiles)
         if molecule is None:
             print("\n Error: Unable to find molecule from the SMILES string.")
             return None
