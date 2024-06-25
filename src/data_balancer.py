@@ -6,25 +6,25 @@ class DatasetBalancer:
     def __init__(self):
         self.data = None
 
-    def load_parquet(self, parquet_path):
-        try:
-            print("\nLoading dataset...")
-            self.data = pd.read_parquet(parquet_path)
-            print(f"Loaded dataset of shape {self.data.shape}.")
-            return self.data
-        except FileNotFoundError:
-            print(f"Error: The file {parquet_path} does not exist.")
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    def load_data(self, path, file_format):
 
-    def load_csv(self, csv_path):
         try:
-            print("\nLoading dataset...\n")
-            self.data = pd.read_csv(csv_path).head(2000)
-            print(f"Loaded dataset of shape {self.data.shape}.")
-            return self.data
+            if file_format.lower() == "csv":
+                print("\nLoading dataset from csv...")
+                self.data = pd.read_csv(path)
+                print(f"\nLoaded dataset of shape {self.data.shape}.")
+                return self.data
+            elif file_format.lower() == "parquet":
+                print("\nLoading dataset from parquet...")
+                self.data = pd.read_parquet(path)
+                print(f"\nLoaded dataset of shape {self.data.shape}.")
+                return self.data
+            else:
+                print(
+                    "Error: Unsupported file format specified. Use 'csv' or 'parquet'."
+                )
         except FileNotFoundError:
-            print(f"Error: The file {csv_path} does not exist.")
+            print(f"Error: The file {path} does not exist.")
         except Exception as e:
             print(f"An error occurred: {e}")
 
