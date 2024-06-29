@@ -7,25 +7,30 @@ class DatasetBalancer:
     def __init__(self):
         self.data = None
 
-    def load_data(self, path, file_format):
+    def load_data(self, path):
+        file_format = path[-3:].lower()
+        print(f"\nLoading dataset from {file_format}...")
+
         try:
-            if file_format.lower() == "csv":
-                print("\nLoading dataset from csv...")
+            if file_format == "csv":
                 self.data = pl.read_csv(path)
                 print(f"\nLoaded dataset of shape {self.data.shape}.")
                 return self.data
-            elif file_format.lower() == "parquet":
-                print("\nLoading dataset from parquet...")
+
+            elif file_format == "parquet":
                 self.data = pl.read_parquet(path)
                 print(f"\nLoaded dataset of shape {self.data.shape}.")
                 return self.data
+
             else:
                 print(
                     "Error: Unsupported file format specified. Use 'csv' or 'parquet'."
                 )
                 return
+
         except FileNotFoundError:
             print(f"Error: The file {path} does not exist.")
+
         except Exception as e:
             print(f"An error occurred: {e}")
 
@@ -57,8 +62,12 @@ class DatasetBalancer:
         # Randomly sample from negative class
         sampled_zero = zero_df.sample(n=n_positive, with_replacement=False)
 
-        # Combine positive and sampled negative samples
-        balanced_df = pl.concat([one_df, sampled_zero])
+        # Combine the sampled negative class with the positive class
+        if n_positive < zero_df.shape[0]:
+            sampled_one = one_df.sample(n=n_positive, with_replacement=False)
+            balanced_df = pl.concat([sampled_one, sampled_zero])
+        else:
+            balanced_df = pl.concat([one_df, sampled_zero])
 
         # Shuffle the final dataset
         balanced_df = balanced_df.sample(fraction=1.0, seed=42)
@@ -70,11 +79,13 @@ class DatasetBalancer:
         if save_format and filename:
 
             if save_format.lower() == "csv":
-                balanced_df.to_csv(f"data/processed_data/{filename}.csv", index=False)
+                balanced_df.write_csv(
+                    f"data/processed_data/{filename}.csv", index=False
+                )
                 print(f"\nDataset saved as data/processed_data/{filename}.csv")
 
             elif save_format.lower() == "parquet":
-                balanced_df.to_parquet(f"data/processed_data/{filename}.parquet")
+                balanced_df.write_parquet(f"data/processed_data/{filename}.parquet")
                 print(f"\nDataset saved as data/processed_data/{filename}.parquet")
 
             else:
