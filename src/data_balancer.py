@@ -29,7 +29,9 @@ class DatasetBalancer:
         except Exception as e:
             print(f"An error occurred: {e}")
 
-    def balance_dataset(self, save_format=None, filename="balanced_dataset"):
+    def balance_dataset(
+        self, save_format=None, filename="balanced_dataset", num_samples=None
+    ):
 
         print("\nBalancing dataset...")
         if "binds" not in self.data.columns:
@@ -43,7 +45,12 @@ class DatasetBalancer:
         # Split data into positive and negative samples
         one_df = self.data.filter(pl.col("binds") == 1)
         zero_df = self.data.filter(pl.col("binds") == 0)
-        n_positive = one_df.shape[0]
+
+        # Set the number of samples to be drawn from the negative class
+        if num_samples and num_samples < zero_df.shape[0]:
+            n_positive = num_samples
+        else:
+            n_positive = zero_df.shape[0]
 
         print(f"\nRandomly sampling {n_positive} samples from the negative class...")
 
@@ -76,10 +83,3 @@ class DatasetBalancer:
                 )
 
         return balanced_df
-
-
-if __name__ == "__main__":
-
-    balancer = DatasetBalancer()
-    balancer.load_csv("data/original_data/train.csv")
-    balancer.balance_dataset(save_format="csv", filename="TEST")
