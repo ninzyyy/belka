@@ -1,4 +1,5 @@
 import pandas as pd
+import polars as pl
 
 
 class DatasetBalancer:
@@ -7,22 +8,22 @@ class DatasetBalancer:
         self.data = None
 
     def load_data(self, path, file_format):
-
         try:
             if file_format.lower() == "csv":
                 print("\nLoading dataset from csv...")
-                self.data = pd.read_csv(path)
+                self.data = pl.read_csv(path)
                 print(f"\nLoaded dataset of shape {self.data.shape}.")
                 return self.data
             elif file_format.lower() == "parquet":
                 print("\nLoading dataset from parquet...")
-                self.data = pd.read_parquet(path)
+                self.data = pl.read_parquet(path)
                 print(f"\nLoaded dataset of shape {self.data.shape}.")
                 return self.data
             else:
                 print(
                     "Error: Unsupported file format specified. Use 'csv' or 'parquet'."
                 )
+                return
         except FileNotFoundError:
             print(f"Error: The file {path} does not exist.")
         except Exception as e:
@@ -31,7 +32,6 @@ class DatasetBalancer:
     def balance_dataset(self, save_format=None, filename="balanced_dataset"):
 
         print("\nBalancing dataset...")
-
         if "binds" not in self.data.columns:
             print("Error: The dataset does not contain a 'binds' column.")
             return
@@ -40,12 +40,21 @@ class DatasetBalancer:
         print("Original distribution of target classes:")
         print(self.data["binds"].value_counts())
 
-        zero_df = self.data[self.data["binds"] == 0]
-        one_df = self.data[self.data["binds"] == 1]
+        # Split data into positive and negative samples
+        one_df = self.data.filter(pl.col("binds") == 1)
+        zero_df = self.data.filter(pl.col("binds") == 0)
+        n_positive = one_df.shape[0]
 
-        sampled_zero = zero_df.sample(n=len(one_df))
-        balanced_df = pd.concat([sampled_zero, one_df])
-        balanced_df = balanced_df.sample(frac=1).reset_index(drop=True)
+        print(f"\nRandomly sampling {n_positive} samples from the negative class...")
+
+        # Randomly sample from negative class
+        sampled_zero = zero_df.sample(n=n_positive, with_replacement=False)
+
+        # Combine positive and sampled negative samples
+        balanced_df = pl.concat([one_df, sampled_zero])
+
+        # Shuffle the final dataset
+        balanced_df = balanced_df.sample(fraction=1.0, seed=42)
 
         print(f"\nBalanced dataset shape: {balanced_df.shape}")
         print("Balanced distribution of target classes:")
