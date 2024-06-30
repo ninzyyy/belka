@@ -25,7 +25,7 @@ class DatasetBalancer:
             # Select the file loader based on the file format
             if file_format in loaders:
                 self.data = loaders[file_format](path)
-                self.logger.timed_print(f"\nLoaded dataset of shape {self.data.shape}.")
+                self.logger.timed_print(f"Loaded dataset of shape {self.data.shape}.")
                 return self.data
             else:
                 self.logger.timed_print(
@@ -38,14 +38,15 @@ class DatasetBalancer:
         self, save_format=None, filename="balanced_dataset", num_samples=None
     ):
 
-        print("\nBalancing dataset...")
+        self.logger.timed_print("Balancing dataset...")
+
         if "binds" not in self.data.columns:
             self.logger.timed_print(
                 "Error: The dataset does not contain a 'binds' column."
             )
             return
 
-        self.logger.timed_print(f"\nOriginal dataset shape: {self.data.shape}")
+        self.logger.timed_print(f"Original dataset shape: {self.data.shape}")
         self.logger.timed_print("Original distribution of target classes:")
         self.logger.timed_print(self.data["binds"].value_counts())
 
@@ -59,7 +60,7 @@ class DatasetBalancer:
         )
 
         self.logger.timed_print(
-            f"\nRandomly sampling {n_positive} samples from each class..."
+            f"Randomly sampling {n_positive} samples from each class..."
         )
 
         # Randomly sample from negative class
@@ -75,7 +76,7 @@ class DatasetBalancer:
         # Shuffle the final dataset
         balanced_df = balanced_df.sample(fraction=1.0, seed=42)
 
-        self.logger.timed_print(f"\nBalanced dataset shape: {balanced_df.shape}")
+        self.logger.timed_print(f"Balanced dataset shape: {balanced_df.shape}")
         self.logger.timed_print("Balanced distribution of target classes:")
         self.logger.timed_print(balanced_df["binds"].value_counts())
 
@@ -84,13 +85,13 @@ class DatasetBalancer:
             if save_format.lower() == "csv":
                 balanced_df.write_csv(f"data/processed_data/{filename}.csv")
                 self.logger.timed_print(
-                    f"\nDataset saved as data/processed_data/{filename}.csv"
+                    f"Dataset saved as data/processed_data/{filename}.csv"
                 )
 
             elif save_format.lower() == "parquet":
                 balanced_df.write_parquet(f"data/processed_data/{filename}.parquet")
                 self.logger.timed_print(
-                    f"\nDataset saved as data/processed_data/{filename}.parquet"
+                    f"Dataset saved as data/processed_data/{filename}.parquet"
                 )
 
             else:
