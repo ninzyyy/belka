@@ -6,8 +6,8 @@ from logger import Logger
 class DatasetBalancer:
 
     def __init__(self):
-        self.data = None
         self.logger = Logger()
+        self.data = None
 
     def load_data(self, path):
 
