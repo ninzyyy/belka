@@ -9,12 +9,12 @@ class FeatureEngineer:
         pass
 
     def generate_ecfp(
-        self, smiles, radius=2, nBits=1024, use_features=False, use_chirality=False
+        self, smiles, radius=2, nBits=2048, use_features=False, use_chirality=False
     ):
 
         molecule = Chem.MolFromSmiles(smiles)
         if molecule is None:
-            return np.zeros((nBits,), dtype=np.uint8)
+            return np.zeros(nBits, dtype=np.uint8)
 
         feature_list = AllChem.GetMorganFingerprintAsBitVect(
             molecule,
@@ -26,7 +26,7 @@ class FeatureEngineer:
 
         return np.array(feature_list).astype(np.uint8)
 
-    def smiles_to_maccs(self, smiles):
+    def generate_maccs(self, smiles):
 
         molecule = Chem.MolFromSmiles(smiles)
         if molecule is None:
@@ -35,17 +35,3 @@ class FeatureEngineer:
         else:
             maccs_key = MACCSkeys.GenMACCSKeys(molecule)
             return [int(bit) for bit in maccs_key.ToBitString()]
-
-    def batch_ecfp(self, df, batch_size=500):
-
-        num_batches = (len(df) + batch_size - 1) // batch_size
-        all_fingerprints = []
-
-        for i in range(num_batches):
-            batch = df.iloc[i * batch_size : (i + 1) * batch_size]
-            fingerprints = batch["molecule_smiles"].apply(self.generate_ecfp)
-            all_fingerprints.append(np.vstack(fingerprints.values))
-            print(f"Processed batch {i+1}/{num_batches}")
-
-        ecfp_matrix = np.vstack(all_fingerprints)
-        ecfp_matrix = ecfp_matrix.astype(np.uint8)
