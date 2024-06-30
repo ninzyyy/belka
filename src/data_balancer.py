@@ -1,3 +1,4 @@
+import os
 import polars as pl
 from logger import Logger
 
@@ -9,31 +10,29 @@ class DatasetBalancer:
         self.logger = Logger()
 
     def load_data(self, path):
-        file_format = path[-3:].lower()
-        self.logger.timed_print(f"Loading dataset from {file_format}...")
+
+        # Extract file extension and convert to lowercase
+        _, file_extension = os.path.splitext(path)
+        file_format = file_extension.lower()[1:]  # Remove the period
+
+        # Mapping of file formats to their respective loading functions
+        loaders = {
+            "csv": pl.read_csv,
+            "parquet": pl.read_parquet,
+        }
 
         try:
-            if file_format == "csv":
-                self.data = pl.read_csv(path)
+            # Select the file loader based on the file format
+            if file_format in loaders:
+                self.data = loaders[file_format](path)
                 self.logger.timed_print(f"\nLoaded dataset of shape {self.data.shape}.")
                 return self.data
-
-            elif file_format == "parquet":
-                self.data = pl.read_parquet(path)
-                self.logger.timed_print(f"\nLoaded dataset of shape {self.data.shape}.")
-                return self.data
-
             else:
                 self.logger.timed_print(
-                    "Error: Unsupported file format specified. Use 'csv' or 'parquet'."
+                    f"Error: Unsupported file format '{file_format}'."
                 )
-                return
-
-        except FileNotFoundError:
-            self.logger.timed_print(f"Error: The file {path} does not exist.")
-
         except Exception as e:
-            self.logger.timed_print(f"An error occurred: {e}")
+            self.logger.timed_print(f"Error loading dataset: {e}")
 
     def balance_dataset(
         self, save_format=None, filename="balanced_dataset", num_samples=None
