@@ -25,13 +25,3 @@ class FeatureEngineer:
         )
 
         return np.array(feature_list).astype(np.uint8)
-
-    def generate_maccs(self, smiles):
-
-        molecule = Chem.MolFromSmiles(smiles)
-        if molecule is None:
-            print("\n Error: Unable to find molecule from the SMILES string.")
-            return None
-        else:
-            maccs_key = MACCSkeys.GenMACCSKeys(molecule)
-            return [int(bit) for bit in maccs_key.ToBitString()]
