@@ -14,7 +14,7 @@ class FeatureEngineer:
         self.logger = Logger()
         self.ecfp_gen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
 
-    def smiles_to_fp(self, smiles):
+    def smiles_to_combined_fp(self, smiles):
 
         molecule = Chem.MolFromSmiles(smiles)
         if molecule is None:
@@ -39,7 +39,9 @@ class FeatureEngineer:
 
         for batch in df.iter_slices(batch_size):
             smiles_arr = batch[smiles_col].to_numpy()
-            features = np.array([self.smiles_to_fp(smiles) for smiles in smiles_arr])
+            features = np.array(
+                [self.smiles_to_combined_fp(smiles) for smiles in smiles_arr]
+            )
 
             processed += len(smiles_arr)
             if verbose:
@@ -47,7 +49,7 @@ class FeatureEngineer:
 
             yield features
 
-    def generate_fp_arr(
+    def generate_combined_fp_arr(
         self,
         df: pl.DataFrame,
         smiles_col: str = "molecule_smiles",
@@ -62,6 +64,9 @@ class FeatureEngineer:
 
         fp_arr = np.concatenate(all_features, axis=0)
         self.logger.timed_print(
-            f"Generated fingerprint array of length {fp_arr.shape[1]} for {fp_arr.shape[0]} molecules."
+            f"Fingerprint generation complete:\n"
+            f"  - Number of molecules processed: {fp_arr.shape[0]:,}\n"
+            f"  - Fingerprint length: {fp_arr.shape[1]:,}\n"
+            f"  - Array data type: {fp_arr.dtype}"
         )
         return fp_arr
